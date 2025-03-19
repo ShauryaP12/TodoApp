@@ -64,7 +64,7 @@ header h1 {
   background: var(--primary-color-dark);
 }
 
-/* Progress Bar (overlapping element) */
+/* Progress Bar */
 .progress-bar-container {
   position: relative;
   height: 10px;
@@ -212,7 +212,7 @@ form button:hover {
   color: var(--completed-text);
 }
 
-/* Overlapping Badge: Shows when task is completed */
+/* Overlapping Badge */
 .todo-item::after {
   content: attr(data-badge);
   position: absolute;
@@ -229,7 +229,7 @@ form button:hover {
   display: block;
 }
 
-/* Subtasks nested list */
+/* Subtasks */
 .subtask-list {
   margin-top: 10px;
   padding-left: 20px;
@@ -360,7 +360,21 @@ form button:hover {
   cursor: pointer;
 }
 
-/* Dark Mode */
+/* Toast Notification */
+#toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary-color);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  display: none;
+  z-index: 300;
+}
+
+/* Dark Mode Overrides */
 body.dark {
   --bg-color: #222;
   --container-bg: #333;
@@ -377,4 +391,12 @@ body.dark button {
   background: #444;
   color: #fff;
   border-color: #555;
+}
+body.dark .todo-item {
+  background: #555;
+  color: #fff;
+}
+body.dark .todo-item .info,
+body.dark .todo-item .notes {
+  color: #ddd;
 }
