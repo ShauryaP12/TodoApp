@@ -1,0 +1,380 @@
+/* CSS Variables for Light Mode */
+:root {
+  --bg-color: #f5f5f5;
+  --container-bg: #ffffff;
+  --primary-color: #007bff;
+  --primary-color-dark: #0056b3;
+  --text-color: #333;
+  --border-color: #ccc;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --completed-text: #999;
+  --low-color: #28a745;
+  --medium-color: #ffc107;
+  --high-color: #dc3545;
+}
+
+/* Global Styles */
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  background: var(--container-bg);
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px var(--shadow-color);
+  position: relative;
+  overflow: visible;
+}
+
+/* Sticky Header */
+header {
+  position: sticky;
+  top: 0;
+  background: var(--container-bg);
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+  border-bottom: 1px solid var(--border-color);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+#toggle-dark-mode {
+  background: var(--primary-color);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+#toggle-dark-mode:hover {
+  background: var(--primary-color-dark);
+}
+
+/* Progress Bar (overlapping element) */
+.progress-bar-container {
+  position: relative;
+  height: 10px;
+  background: var(--border-color);
+  border-radius: 5px;
+  margin: 10px 0 20px;
+  overflow: hidden;
+}
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background: var(--primary-color);
+  transition: width 0.5s ease;
+}
+
+/* Form Styles */
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+form input[type="text"],
+form select,
+form input[type="date"],
+form input[type="datetime-local"] {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+}
+form button {
+  padding: 10px 20px;
+  background: var(--primary-color);
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+form button:hover {
+  background: var(--primary-color-dark);
+}
+
+/* Advanced Options */
+#toggle-advanced {
+  background: #6c757d;
+  flex: 100%;
+}
+#advanced-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+/* Controls Section */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.controls input#search {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+}
+.filter-group {
+  display: flex;
+  gap: 5px;
+}
+.filter-btn {
+  padding: 10px 15px;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.filter-btn:hover,
+.filter-btn.active {
+  background: var(--primary-color-dark);
+}
+.controls select {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--text-color);
+}
+
+/* Stats Display */
+#stats {
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+/* To-Do List */
+#todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.todo-item {
+  background: #f9f9f9;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  cursor: grab;
+  overflow: visible;
+  transition: transform 0.2s ease;
+}
+.todo-item:hover {
+  transform: scale(1.02);
+}
+.todo-item input.select-task {
+  margin-right: 10px;
+}
+.todo-item span {
+  font-weight: bold;
+  margin-right: 10px;
+  word-break: break-word;
+}
+.todo-item .info {
+  font-size: 0.85rem;
+  color: #666;
+  margin-right: 10px;
+}
+.todo-item .notes {
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: #555;
+}
+.todo-item.completed span {
+  text-decoration: line-through;
+  color: var(--completed-text);
+}
+
+/* Overlapping Badge: Shows when task is completed */
+.todo-item::after {
+  content: attr(data-badge);
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--primary-color);
+  color: #fff;
+  padding: 3px 7px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  display: none;
+}
+.todo-item.completed::after {
+  display: block;
+}
+
+/* Subtasks nested list */
+.subtask-list {
+  margin-top: 10px;
+  padding-left: 20px;
+}
+.subtask-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.subtask-item input[type="checkbox"] {
+  margin-right: 8px;
+}
+.add-subtask {
+  margin-top: 5px;
+  display: flex;
+  gap: 5px;
+}
+.add-subtask input {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+}
+
+/* Buttons in To-Do Items */
+.todo-item button {
+  padding: 8px 10px;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: opacity 0.3s;
+}
+.todo-item button:hover {
+  opacity: 0.8;
+}
+.complete-btn {
+  background: #28a745;
+}
+.edit-btn {
+  background: #ffc107;
+  color: #333;
+}
+.delete-btn {
+  background: #dc3545;
+}
+.subtask-btn {
+  background: #6c757d;
+  font-size: 0.8rem;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  margin-top: 15px;
+}
+.footer button {
+  background: #555;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  margin: 5px;
+  transition: background 0.3s;
+}
+.footer button:hover {
+  background: #333;
+}
+
+/* Floating Action Button */
+#fab-add-task {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  font-size: 2rem;
+  line-height: 60px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: background 0.3s;
+  z-index: 100;
+}
+#fab-add-task:hover {
+  background: var(--primary-color-dark);
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 200;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+}
+.modal-content {
+  background: var(--container-bg);
+  margin: 10% auto;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  width: 80%;
+  max-width: 500px;
+  border-radius: 8px;
+  position: relative;
+  animation: slideDown 0.3s ease-out;
+}
+@keyframes slideDown {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.modal .close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Dark Mode */
+body.dark {
+  --bg-color: #222;
+  --container-bg: #333;
+  --text-color: #fff;
+  --border-color: #555;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --primary-color: #1e90ff;
+  --primary-color-dark: #0073e6;
+  --completed-text: #aaa;
+}
+body.dark input,
+body.dark select,
+body.dark button {
+  background: #444;
+  color: #fff;
+  border-color: #555;
+}
