@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ultimate To-Do List</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Ultimate To-Do List</h1>
+      <button id="toggle-dark-mode">Dark Mode</button>
+    </header>
+    <!-- A progress bar that overlaps the container header -->
+    <div class="progress-bar-container">
+      <div class="progress-bar"></div>
+    </div>
+    <!-- Main Task Form -->
+    <form id="todo-form">
+      <input type="text" id="todo-input" placeholder="New task..." required />
+      <select id="priority">
+        <option value="low">Low Priority</option>
+        <option value="medium">Medium Priority</option>
+        <option value="high">High Priority</option>
+      </select>
+      <input type="date" id="due-date" title="Due Date" />
+      <button type="button" id="toggle-advanced">Show Advanced Options</button>
+      <div id="advanced-options" style="display: none;">
+        <input type="text" id="category" placeholder="Category (optional)" />
+        <input type="datetime-local" id="reminder" title="Reminder Time (optional)" />
+        <input type="text" id="notes" placeholder="Notes (optional)" />
+      </div>
+      <button type="submit">Add Task</button>
+    </form>
+    <!-- Controls: Search, Filter, Sort -->
+    <div class="controls">
+      <input type="text" id="search" placeholder="Search tasks..." />
+      <div class="filter-group">
+        <button data-filter="all" class="filter-btn active">All</button>
+        <button data-filter="active" class="filter-btn">Active</button>
+        <button data-filter="completed" class="filter-btn">Completed</button>
+      </div>
+      <select id="sort">
+        <option value="none">Sort: None</option>
+        <option value="dueDate">Sort by Due Date</option>
+        <option value="priority">Sort by Priority</option>
+      </select>
+    </div>
+    <!-- Stats Display -->
+    <div id="stats"></div>
+    <!-- To-Do List -->
+    <ul id="todo-list"></ul>
+    <!-- Footer with Bulk Actions & Export/Import -->
+    <div class="footer">
+      <button id="complete-selected">Complete Selected</button>
+      <button id="delete-selected">Delete Selected</button>
+      <button id="clear-completed">Clear Completed</button>
+      <button id="export-tasks">Export Tasks</button>
+      <button id="import-tasks">Import Tasks</button>
+      <input type="file" id="import-file" accept="application/json" style="display:none;" />
+    </div>
+  </div>
+
+  <!-- Floating Action Button (overlapping bottom-right) -->
+  <button id="fab-add-task">+</button>
+
+  <!-- Modal for Editing Task -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Edit Task</h2>
+      <form id="edit-form">
+        <input type="text" id="edit-todo-input" placeholder="Task text" required />
+        <select id="edit-priority">
+          <option value="low">Low Priority</option>
+          <option value="medium">Medium Priority</option>
+          <option value="high">High Priority</option>
+        </select>
+        <input type="date" id="edit-due-date" title="Due Date" />
+        <input type="text" id="edit-category" placeholder="Category (optional)" />
+        <input type="datetime-local" id="edit-reminder" title="Reminder Time (optional)" />
+        <input type="text" id="edit-notes" placeholder="Notes (optional)" />
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
