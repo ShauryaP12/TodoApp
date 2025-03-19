@@ -8,6 +8,7 @@ const toggleAdvancedBtn = document.getElementById('toggle-advanced');
 const categoryInput = document.getElementById('category');
 const reminderInput = document.getElementById('reminder');
 const notesInput = document.getElementById('notes');
+const recurrenceSelect = document.getElementById('recurrence');
 
 const searchInput = document.getElementById('search');
 const filterButtons = document.querySelectorAll('.filter-btn');
@@ -35,6 +36,9 @@ const editDueDate = document.getElementById('edit-due-date');
 const editCategory = document.getElementById('edit-category');
 const editReminder = document.getElementById('edit-reminder');
 const editNotes = document.getElementById('edit-notes');
+const editRecurrence = document.getElementById('edit-recurrence');
+
+const toast = document.getElementById('toast');
 
 let todos = JSON.parse(localStorage.getItem('todos')) || [];
 let currentFilter = 'all';
@@ -42,7 +46,13 @@ let currentSearch = '';
 let currentSort = 'none';
 let draggedTaskIndex = null;
 let reminderTimers = [];
-let editIndex = null; // which task is being edited
+let editIndex = null;
+let lastDeleted = null; // For undo delete
+
+// Load dark mode preference
+if (localStorage.getItem('darkMode') === 'true') {
+  document.body.classList.add('dark');
+}
 
 // Save to localStorage
 function saveTodos() {
@@ -95,9 +105,51 @@ function renderStats() {
   statsDiv.textContent = `Total: ${total} | Active: ${active} | Completed: ${completed}`;
 }
 
-// Render To-Do List (including subtasks and overlapping badges)
+// Helper: Calculate next due date for recurring tasks
+function getNextDueDate(currentDate, recurrence) {
+  let date = currentDate ? new Date(currentDate) : new Date();
+  switch(recurrence) {
+    case 'daily':
+      date.setDate(date.getDate() + 1);
+      break;
+    case 'weekly':
+      date.setDate(date.getDate() + 7);
+      break;
+    case 'monthly':
+      date.setMonth(date.getMonth() + 1);
+      break;
+    default:
+      break;
+  }
+  return date.toISOString().split('T')[0]; // Return date in YYYY-MM-DD
+}
+
+// Show toast notification with undo option
+function showToast(message, undoCallback) {
+  toast.textContent = message + ' ';
+  const undoBtn = document.createElement('button');
+  undoBtn.textContent = 'Undo';
+  undoBtn.style.background = 'transparent';
+  undoBtn.style.color = '#fff';
+  undoBtn.style.border = 'none';
+  undoBtn.style.cursor = 'pointer';
+  toast.appendChild(undoBtn);
+  toast.style.display = 'block';
+  // Hide after 5 seconds
+  const timeout = setTimeout(() => {
+    toast.style.display = 'none';
+  }, 5000);
+  undoBtn.addEventListener('click', () => {
+    clearTimeout(timeout);
+    toast.style.display = 'none';
+    if (typeof undoCallback === 'function') {
+      undoCallback();
+    }
+  });
+}
+
+// Render To-Do List
 function renderTodos() {
-  // Determine visible tasks based on filter and search
   let visibleIndices = [];
   todos.forEach((todo, i) => {
     if (currentFilter === 'active' && todo.completed) return;
@@ -106,7 +158,6 @@ function renderTodos() {
     visibleIndices.push(i);
   });
 
-  // Apply sorting
   if (currentSort === 'dueDate') {
     visibleIndices.sort((a, b) => {
       const dateA = todos[a].dueDate ? new Date(todos[a].dueDate) : new Date(8640000000000000);
@@ -125,17 +176,13 @@ function renderTodos() {
     li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
     li.setAttribute('draggable', 'true');
     li.dataset.index = i;
-
-    // Overlap badge (for completed tasks, shows a checkmark)
     li.setAttribute('data-badge', todo.completed ? '✔' : '');
 
-    // Build extra info strings
     const dueDateStr = todo.dueDate ? `<span class="info">Due: ${new Date(todo.dueDate).toLocaleDateString()}</span>` : '';
     const categoryStr = todo.category ? `<span class="info">Category: ${todo.category}</span>` : '';
     const reminderStr = todo.reminder ? `<span class="info">Reminds: ${new Date(todo.reminder).toLocaleString()}</span>` : '';
     const notesStr = todo.notes ? `<div class="notes">${todo.notes}</div>` : '';
 
-    // Build subtasks if any (subtasks is an optional array)
     let subtasksHTML = '';
     if (todo.subtasks && todo.subtasks.length > 0) {
       subtasksHTML += '<ul class="subtask-list">';
@@ -149,7 +196,6 @@ function renderTodos() {
       });
       subtasksHTML += '</ul>';
     }
-    // Button to add a new subtask
     subtasksHTML += `
       <div class="add-subtask" data-index="${i}">
         <input type="text" placeholder="Add subtask..." />
@@ -163,7 +209,7 @@ function renderTodos() {
       ${categoryStr} ${dueDateStr} ${reminderStr}
       ${notesStr}
       <div>
-        <button class="complete-btn" data-index="${i}">${todo.completed ? 'Undo' : 'Complete'}</button>
+        <button class="complete-btn" data-index="${i}">${todo.recurrence !== 'none' ? 'Complete & Update' : (todo.completed ? 'Undo' : 'Complete')}</button>
         <button class="edit-btn" data-index="${i}">Edit</button>
         <button class="delete-btn" data-index="${i}">Delete</button>
       </div>
@@ -172,7 +218,6 @@ function renderTodos() {
       </div>
     `;
 
-    // Drag and Drop events
     li.addEventListener('dragstart', (e) => {
       draggedTaskIndex = i;
       e.dataTransfer.effectAllowed = 'move';
@@ -206,19 +251,21 @@ form.addEventListener('submit', (e) => {
   const category = categoryInput.value.trim();
   const reminder = reminderInput.value;
   const notes = notesInput.value.trim();
+  const recurrence = recurrenceSelect.value;
   if (text) {
-    todos.push({ text, priority, dueDate, category, reminder, notes, completed: false, subtasks: [] });
+    todos.push({ text, priority, dueDate, category, reminder, notes, recurrence, completed: false, subtasks: [] });
     input.value = '';
     dueDateInput.value = '';
     categoryInput.value = '';
     reminderInput.value = '';
     notesInput.value = '';
+    recurrenceSelect.value = 'none';
     saveTodos();
     renderTodos();
   }
 });
 
-// Toggle advanced options visibility
+// Toggle advanced options
 toggleAdvancedBtn.addEventListener('click', () => {
   if (advancedOptions.style.display === 'none') {
     advancedOptions.style.display = 'flex';
@@ -229,33 +276,52 @@ toggleAdvancedBtn.addEventListener('click', () => {
   }
 });
 
-// Task action events (complete, edit, delete)
+// Task actions
 todoList.addEventListener('click', (e) => {
   const index = e.target.dataset.index;
   if (index === undefined) return;
   if (e.target.classList.contains('complete-btn')) {
-    todos[index].completed = !todos[index].completed;
+    const task = todos[index];
+    // For recurring tasks, update due date and do not mark as completed
+    if (task.recurrence !== 'none' && !task.completed) {
+      task.dueDate = getNextDueDate(task.dueDate, task.recurrence);
+      showToast('Recurring task updated for next occurrence');
+    } else {
+      task.completed = !task.completed;
+    }
   } else if (e.target.classList.contains('edit-btn')) {
     editIndex = index;
-    // Pre-fill modal fields
-    const todo = todos[index];
-    editInput.value = todo.text;
-    editPriority.value = todo.priority;
-    editDueDate.value = todo.dueDate || '';
-    editCategory.value = todo.category || '';
-    editReminder.value = todo.reminder || '';
-    editNotes.value = todo.notes || '';
+    const task = todos[index];
+    editInput.value = task.text;
+    editPriority.value = task.priority;
+    editDueDate.value = task.dueDate || '';
+    editCategory.value = task.category || '';
+    editReminder.value = task.reminder || '';
+    editNotes.value = task.notes || '';
+    editRecurrence.value = task.recurrence || 'none';
     editModal.style.display = 'block';
   } else if (e.target.classList.contains('delete-btn')) {
+    // Save deleted task for undo
+    lastDeleted = { index: index, task: todos[index] };
     todos.splice(index, 1);
+    saveTodos();
+    renderTodos();
+    showToast('Task deleted', () => {
+      // Undo deletion
+      if (lastDeleted) {
+        todos.splice(lastDeleted.index, 0, lastDeleted.task);
+        saveTodos();
+        renderTodos();
+        lastDeleted = null;
+      }
+    });
   }
   saveTodos();
   renderTodos();
 });
 
-// Subtask events (add new subtask and toggle completion)
+// Subtask events
 todoList.addEventListener('click', (e) => {
-  // Add subtask button clicked
   if (e.target.classList.contains('subtask-btn')) {
     const parentIndex = e.target.parentElement.dataset.index;
     const subInput = e.target.previousElementSibling;
@@ -270,7 +336,6 @@ todoList.addEventListener('click', (e) => {
       renderTodos();
     }
   }
-  // Toggle subtask checkbox
   if (e.target.classList.contains('subtask-checkbox')) {
     const parent = e.target.dataset.parent;
     const subIndex = e.target.dataset.index;
@@ -280,7 +345,7 @@ todoList.addEventListener('click', (e) => {
   }
 });
 
-// Bulk actions: complete or delete selected tasks
+// Bulk actions
 completeSelectedBtn.addEventListener('click', () => {
   const selected = document.querySelectorAll('.select-task:checked');
   selected.forEach(cb => {
@@ -321,18 +386,19 @@ sortSelect.addEventListener('change', (e) => {
   renderTodos();
 });
 
-// Floating Action Button: Scroll to the top (or focus the main input)
+// Floating Action Button
 fabAddTask.addEventListener('click', () => {
   input.focus();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// Dark Mode Toggle
+// Dark Mode Toggle with persistence
 darkModeToggle.addEventListener('click', () => {
   document.body.classList.toggle('dark');
+  localStorage.setItem('darkMode', document.body.classList.contains('dark'));
 });
 
-// Export tasks as JSON file
+// Export tasks
 exportBtn.addEventListener('click', () => {
   const dataStr = JSON.stringify(todos, null, 2);
   const blob = new Blob([dataStr], { type: "application/json" });
@@ -344,7 +410,7 @@ exportBtn.addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-// Import tasks from JSON file
+// Import tasks
 importBtn.addEventListener('click', () => {
   importFileInput.click();
 });
@@ -387,6 +453,7 @@ editForm.addEventListener('submit', (e) => {
     todos[editIndex].category = editCategory.value.trim();
     todos[editIndex].reminder = editReminder.value;
     todos[editIndex].notes = editNotes.value.trim();
+    todos[editIndex].recurrence = editRecurrence.value;
     saveTodos();
     renderTodos();
     editModal.style.display = 'none';
